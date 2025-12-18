@@ -1,7 +1,7 @@
-import { Request, Response } from "express"
-import { AppError } from "@/utils/AppError"
-import { prisma } from "@/database/prisma"
-import { z } from "zod"
+import { prisma } from '@/database/prisma'
+import { AppError } from '@/utils/AppError'
+import { Request, Response } from 'express'
+import { z } from 'zod'
 
 class DeliveryLogsController {
   async create(request: Request, response: Response) {
@@ -17,15 +17,15 @@ class DeliveryLogsController {
     })
 
     if (!delivery) {
-      throw new AppError("delivery not found", 404)
+      throw new AppError('delivery not found', 404)
     }
 
-    if (delivery.status === "delivered") {
-      throw new AppError("this order has already been delivered")
+    if (delivery.status === 'delivered') {
+      throw new AppError('this order has already been delivered')
     }
 
-    if (delivery.status === "processing") {
-      throw new AppError("change status to shipped")
+    if (delivery.status === 'processing') {
+      throw new AppError('change status to shipped')
     }
 
     await prisma.deliveryLog.create({
@@ -53,11 +53,15 @@ class DeliveryLogsController {
       },
     })
 
+    if (!delivery) {
+      return response.status(404).json({ message: 'Delivery not found!' })
+    }
+
     if (
-      request.user?.role === "customer" &&
+      request.user?.role === 'customer' &&
       request.user.id !== delivery?.userId
     ) {
-      throw new AppError("the user can only view their deliveries", 401)
+      throw new AppError('the user can only view their deliveries', 401)
     }
 
     return response.json(delivery)
